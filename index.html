@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apromore × Salesforce · Process Intelligence as a Competitive Advantage</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="components.css" />
+  <link rel="stylesheet" href="animation.css" />
+  <link rel="stylesheet" href="animation-interactions.css" />
+  <style>
+    /* Apromore — teal accent (Salesforce 2026 secondary palette) */
+    :root { --accent: #06A59A; --accent-l: #04E1CB; }
+
+    /* Slide 4 — hide static connector line + arrow tip, keep animated packet */
+    .arch-conn-line { background: transparent !important; }
+    .arch-conn-line::after { display: none !important; }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    /* ── Slide 4 · Architecture diagram ──────────────────────────── */
+    .arch-row {
+      display: flex;
+      align-items: flex-start;
+      margin-top: 40px;
+    }
+    .arch-node-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px) scale(0.94);
+      transition: opacity 0.45s cubic-bezier(0.34,1.3,0.64,1),
+                  transform 0.45s cubic-bezier(0.34,1.3,0.64,1);
+    }
+    .arch-node-card.revealed { opacity:1; transform:translateY(0) scale(1); }
+
+    .arch-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      position: relative;
+      transition: box-shadow 0.4s ease;
+    }
+    .arch-node-card.pulsing .arch-circle {
+      animation: arch-node-pulse 1.4s ease infinite;
+    }
+    @keyframes arch-node-pulse {
+      0%,100% { box-shadow: 0 0 0 0 var(--arch-glow,rgba(6,106,254,0.35)); }
+      50%      { box-shadow: 0 0 0 12px transparent; }
+    }
+
+    .arch-num {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .arch-name {
+      font-size: 15px; font-weight: 700; color: var(--text);
+      margin-bottom: 3px;
+    }
+    .arch-sub {
+      font-size: 11px; color: var(--muted); margin-bottom: 10px;
+    }
+    .arch-desc {
+      font-size: 12px; color: var(--body); line-height: 1.55;
+      max-width: 180px;
+    }
+    .arch-tag {
+      display: inline-block; margin-top: 10px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.04); color: var(--muted);
+    }
+
+    /* Horizontal connector */
+    .arch-conn {
+      flex: 0 0 72px;
+      position: relative;
+      align-self: stretch;
+    }
+    .arch-conn-line {
+      position: absolute;
+      top: 39px; /* center of 80px circle */
+      left: 0; right: 0; height: 2px;
+      border-radius: 1px;
+      background: var(--gray-200);
+      transition: background 0.5s ease;
+    }
+    .arch-conn.active .arch-conn-line {
+      background: var(--conn-grad);
+    }
+    /* Arrowhead */
+    .arch-conn-line::after {
+      content: '';
+      position: absolute;
+      right: -1px; top: 50%;
+      width: 8px; height: 8px;
+      border-top: 2px solid var(--gray-200);
+      border-right: 2px solid var(--gray-200);
+      transform: translateY(-50%) rotate(45deg);
+      transition: border-color 0.5s ease;
+    }
+    .arch-conn.active .arch-conn-line::after {
+      border-color: var(--conn-tip);
+    }
+    /* Label above line */
+    .arch-conn-lbl {
+      position: absolute;
+      top: 20px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.4s ease 0.3s;
+    }
+    .arch-conn.active .arch-conn-lbl { opacity: 1; }
+    /* Traveling packet */
+    .arch-pkt {
+      position: absolute;
+      top: 33px; left: 0;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--pkt-color, var(--sf-blue-m));
+      box-shadow: 0 0 10px 3px var(--pkt-glow, rgba(6,106,254,0.45));
+      opacity: 0;
+    }
+    .arch-pkt.flowing {
+      animation: pkt-h 1.1s linear infinite;
+    }
+    @keyframes pkt-h {
+      0%   { left: 0;    opacity: 0; }
+      8%   { opacity: 1; }
+      88%  { opacity: 1; }
+      100% { left: calc(100% - 10px); opacity: 0; }
+    }
+
+    .slide-deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .slide.active { opacity: 1; pointer-events: all; }
+
+    .cobrand-pill {
+      position: fixed;
+      top: 20px;
+      left: 28px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 40px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+      backdrop-filter: blur(4px);
+    }
+    .cobrand-divider { width:1px; height:22px; background:#E5E5E5; }
+
+    .section-label {
+      position: fixed;
+      top: 24px;
+      right: 32px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(0,30,91,0.28);
+      z-index: 100;
+    }
+
+    .slide-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 200;
+    }
+    .slide-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--gray-200);
+      background: var(--white);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-card);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .slide-btn:hover { background: var(--sf-blue); color: #fff; border-color: var(--sf-blue); }
+    .slide-btn:disabled { opacity: 0.3; cursor: default; }
+    .slide-counter {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .slide-dots {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+      z-index: 200;
+    }
+    .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .dot.active {
+      background: var(--sf-blue);
+      transform: scale(1.4);
+    }
+
+    .slide-body {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 72px 48px 100px;
+    }
+    .slide-hero { padding-top: 0; }
+    .slide-hero .hero { min-height: 100vh; display: flex; align-items: center; }
+    .slide-hero .hero-inner { width: 100%; }
+
+    .slide-closing .slide-body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slide-closing .closing-inner { width: 100%; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── COBRAND PILL ────────────────────────────────────────── -->
+  <div class="cobrand-pill">
+    <img src="assets/logos/Salesforce-Corporate-Logo-Cloud-RBG.svg" width="28" height="28" alt="Salesforce" />
+    <div class="cobrand-divider"></div>
+    <span style="font-size:12px;font-weight:700;color:var(--sf-navy);letter-spacing:0.02em;">Apromore</span>
+  </div>
+
+  <!-- ─── SLIDE DECK ─────────────────────────────────────────── -->
+  <div class="slide-deck">
+
+    <!-- SLIDE 1 · Hero -->
+    <div class="slide slide-hero active" data-section="">
+      <div class="hero" style="position:relative;overflow:hidden;">
+        <!-- Decorative accent circle (right side) -->
+        <div aria-hidden="true" style="position:absolute;right:-180px;top:50%;transform:translateY(-50%);width:720px;height:720px;border-radius:50%;background:radial-gradient(circle at 30% 50%, rgba(0,179,255,0.18), rgba(0,179,255,0) 65%);pointer-events:none;"></div>
+
+        <div class="hero-inner" style="grid-template-columns:1fr;gap:0;max-width:1100px;position:relative;">
+          <div>
+            <div class="hero-eyebrow" data-animate="fade-up" data-anim-delay="0" style="margin-bottom:28px;">Apromore × Salesforce</div>
+            <h1 data-animate="fade-up" data-anim-delay="80" style="font-size:clamp(44px, 5.5vw, 84px);line-height:1.05;letter-spacing:-0.03em;margin-bottom:32px;max-width:920px;">Process Intelligence<br/><em>as a competitive advantage.</em></h1>
+            <p class="hero-sub" data-animate="fade-up" data-anim-delay="160" style="font-size:18px;max-width:680px;color:rgba(255,255,255,0.7);">The decisions facing large organisations right now are bigger, faster, and carry more risk than they did two years ago. Most are making those decisions without a clear view of how their operations actually work.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 · Three pressures already on the executive agenda -->
+    <div class="slide" data-section="" style="background:var(--off-white);">
+      <div class="slide-body">
+        <div class="section-title" data-animate="fade-up" data-anim-delay="60" style="margin-bottom:48px;font-size:clamp(30px, 3.4vw, 44px);">Three pressures already on the <span style="color:var(--accent);">executive agenda</span></div>
+        <div class="card-grid-3">
+          <div class="card card-accent-accent" data-animate="scale-in" data-anim-delay="180" style="display:flex;flex-direction:column;">
+            <div class="card-icon">
+              <img src="assets/icons/2d/Agentforce.svg" width="28" height="28" alt="AI Deployment" />
+            </div>
+            <div class="eyebrow eyebrow-accent" style="font-size:10px;margin-bottom:8px;">AI Deployment</div>
+            <div class="card-title">Knowing where to deploy AI — and the expected impact.</div>
+            <div class="card-body" style="flex:1;">Organisations are committing significant capital to AI without a clear view of where it will have the greatest effect.</div>
+            <hr class="divider" style="margin:18px 0 14px;" />
+            <div class="card-body"><strong>The risk is not that AI fails — it is that it succeeds in the wrong place.</strong></div>
+          </div>
+          <div class="card card-accent-accent" data-animate="scale-in" data-anim-delay="260" style="display:flex;flex-direction:column;">
+            <div class="card-icon">
+              <img src="assets/icons/2d/Sales Revenue.png" width="28" height="28" alt="Cost Pressure" />
+            </div>
+            <div class="eyebrow eyebrow-accent" style="font-size:10px;margin-bottom:8px;">Cost Pressure</div>
+            <div class="card-title">Reducing cost without reducing capability.</div>
+            <div class="card-body" style="flex:1;">The global economic environment is forcing cost decisions at a pace most organisations are not equipped for. Without forensic understanding of where money is actually being lost, those decisions are based on estimation.</div>
+            <hr class="divider" style="margin:18px 0 14px;" />
+            <div class="card-body"><strong>The most expensive cuts are the ones you have to reverse.</strong></div>
+          </div>
+          <div class="card card-accent-accent" data-animate="scale-in" data-anim-delay="340" style="display:flex;flex-direction:column;">
+            <div class="card-icon">
+              <img src="assets/icons/2d/MuleSoft.png" width="28" height="28" alt="Supply Chain" />
+            </div>
+            <div class="eyebrow eyebrow-accent" style="font-size:10px;margin-bottom:8px;">Supply Chain</div>
+            <div class="card-title">Responding to supply chain disruption before it arrives.</div>
+            <div class="card-body" style="flex:1;">Supply chains built for stability are now exposed to forces that are unprecedented and unpredictable. Reconfiguring quickly depends on understanding exactly how your supply chain operates today.</div>
+            <hr class="divider" style="margin:18px 0 14px;" />
+            <div class="card-body"><strong>Organisations that can model a change before committing will survive. The ones that cannot may react too late.</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 · The Common Thread (text-only on navy) -->
+    <div class="slide" data-section="" style="background:var(--sf-navy);">
+      <div class="slide-body" style="max-width:1100px;">
+        <div class="eyebrow" data-animate="fade-up" data-anim-delay="0" style="color:var(--accent);margin-bottom:32px;">The Common Thread</div>
+        <h2 data-animate="fade-up" data-anim-delay="80" style="font-family:var(--font-display);font-size:clamp(36px, 4.6vw, 64px);font-weight:700;line-height:1.1;letter-spacing:-0.025em;color:#fff;margin-bottom:56px;max-width:1000px;">These three challenges <span style="color:var(--accent);">all demand swift, precise action.</span></h2>
+        <div style="max-width:780px;display:flex;flex-direction:column;gap:28px;">
+          <p data-animate="fade-up" data-anim-delay="180" style="font-size:18px;line-height:1.65;color:rgba(255,255,255,0.78);">If a competitor cracks AI deployment before you do, if conditions deteriorate and you cannot reduce costs quickly, if supply chains face external shock and you cannot adjust in time — <strong style="color:#fff;font-weight:600;">the consequences move from problematic to severe.</strong></p>
+          <p data-animate="fade-up" data-anim-delay="280" style="font-size:18px;line-height:1.65;color:rgba(255,255,255,0.78);">To act with both speed and precision, you need a forensic understanding of how your operations actually work, the ability to quantify what that costs you, and the ability to see the impact of changing them before you commit.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 · The four layers of Process Intelligence -->
+    <div class="slide" data-section="" style="background:var(--off-white);">
+      <div class="slide-body">
+        <div style="margin-bottom:32px;">
+          <h2 data-animate="fade-up" data-anim-delay="0" style="font-family:var(--font-display);font-size:clamp(30px, 3.4vw, 44px);font-weight:700;line-height:1.1;letter-spacing:-0.025em;color:var(--text);white-space:nowrap;margin-bottom:18px;">The four layers of Process Intelligence.</h2>
+          <p data-animate="fade-up" data-anim-delay="80" style="font-size:18px;line-height:1.55;color:var(--text);font-weight:600;">Most organisations have only explored process mining. <span style="color:var(--accent);">That is one of four layers of Process Intelligence.</span></p>
+        </div>
+
+        <div class="arch-row" id="s4-arch">
+
+          <!-- Layer 01 · Process Mining -->
+          <div class="arch-node-card" id="s4-n1" style="--arch-glow:rgba(2,42,192,0.35);">
+            <div class="arch-num" style="color:var(--sf-blue);">LAYER 01</div>
+            <div class="arch-circle" style="background:rgba(2,42,192,0.08);border:2px solid rgba(2,42,192,0.2);">
+              <img src="assets/icons/2d/Tableau.png" width="36" height="36" alt="Process Mining" />
+            </div>
+            <div class="arch-name">Process Mining</div>
+            <div class="arch-desc" style="margin-top:8px;">Maps how end-to-end processes actually run across your systems. Identifies bottlenecks, variants, rework loops. <strong>This is what most have experienced.</strong></div>
+          </div>
+
+          <!-- Connector 1→2 -->
+          <div class="arch-conn" id="s4-c1" style="--conn-grad:linear-gradient(90deg,#022AC0,#066AFE);--conn-tip:#066AFE;">
+            <div class="arch-conn-line">
+              <div class="arch-pkt" id="s4-p1" style="--pkt-color:#06A59A;--pkt-glow:rgba(6,165,154,0.45);"></div>
+            </div>
+          </div>
+
+          <!-- Layer 02 · Task Mining (DIFFERENTIATOR — amplified, alignment preserved, more breathing room) -->
+          <div class="arch-node-card" id="s4-n2" style="--arch-glow:rgba(6,165,154,0.5);background:rgba(6,165,154,0.06);border-radius:14px;box-shadow:0 0 0 1px rgba(6,165,154,0.18), 0 12px 32px -8px rgba(6,165,154,0.25);padding:20px 0 32px;margin-top:-20px;">
+            <div class="arch-num" style="color:var(--accent);">LAYER 02</div>
+            <div class="arch-circle" style="background:rgba(6,165,154,0.12);border:2px solid rgba(6,165,154,0.4);box-shadow:0 0 24px rgba(6,165,154,0.25);">
+              <img src="assets/icons/2d/Robotics Process Automation.png" width="36" height="36" alt="Task Mining" />
+            </div>
+            <div class="arch-name">Task Mining</div>
+            <div class="arch-desc" style="margin-top:8px;">Captures how individual tasks are performed at the desktop level. Where the most granular inefficiencies live. <strong>Apromore is a market leader.</strong></div>
+            <span class="arch-tag" style="background:var(--accent);color:#fff;border:none;font-weight:700;font-size:10px;letter-spacing:0.14em;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(6,165,154,0.35);">★ MARKET LEADER</span>
+          </div>
+
+          <!-- Connector 2→3 -->
+          <div class="arch-conn" id="s4-c2" style="--conn-grad:linear-gradient(90deg,#066AFE,#00B3FF);--conn-tip:#00B3FF;">
+            <div class="arch-conn-line">
+              <div class="arch-pkt" id="s4-p2" style="--pkt-color:#06A59A;--pkt-glow:rgba(6,165,154,0.45);"></div>
+            </div>
+          </div>
+
+          <!-- Layer 03 · Analysis -->
+          <div class="arch-node-card" id="s4-n3" style="--arch-glow:rgba(0,179,255,0.35);">
+            <div class="arch-num" style="color:var(--sf-blue-l);">LAYER 03</div>
+            <div class="arch-circle" style="background:rgba(0,179,255,0.08);border:2px solid rgba(0,179,255,0.2);">
+              <img src="assets/icons/2d/Sales Revenue.png" width="36" height="36" alt="Analysis" />
+            </div>
+            <div class="arch-name">Analysis</div>
+            <div class="arch-desc" style="margin-top:8px;">Quantifies commercial impact. <strong>Turns process maps into dollar values</strong> — cost of inefficiency, recoverable waste, time lost to workarounds.</div>
+          </div>
+
+          <!-- Connector 3→4 -->
+          <div class="arch-conn" id="s4-c3" style="--conn-grad:linear-gradient(90deg,#00B3FF,#06A59A);--conn-tip:#06A59A;">
+            <div class="arch-conn-line">
+              <div class="arch-pkt" id="s4-p3" style="--pkt-color:#06A59A;--pkt-glow:rgba(6,165,154,0.45);"></div>
+            </div>
+          </div>
+
+          <!-- Layer 04 · Digital Twin (DIFFERENTIATOR — amplified, alignment preserved, more breathing room) -->
+          <div class="arch-node-card" id="s4-n4" style="--arch-glow:rgba(6,165,154,0.5);background:rgba(6,165,154,0.06);border-radius:14px;box-shadow:0 0 0 1px rgba(6,165,154,0.18), 0 12px 32px -8px rgba(6,165,154,0.25);padding:20px 0 32px;margin-top:-20px;">
+            <div class="arch-num" style="color:var(--accent);">LAYER 04</div>
+            <div class="arch-circle" style="background:rgba(6,165,154,0.12);border:2px solid rgba(6,165,154,0.4);box-shadow:0 0 24px rgba(6,165,154,0.25);">
+              <img src="assets/icons/2d/Scale Testing.svg" width="36" height="36" alt="Digital Twin Simulation" />
+            </div>
+            <div class="arch-name">Digital Twin / Simulation</div>
+            <div class="arch-desc" style="margin-top:8px;">Simulates the impact of a proposed change before implementation. Removes guesswork from transformation. <strong>Apromore is a market leader.</strong></div>
+            <span class="arch-tag" style="background:var(--accent);color:#fff;border:none;font-weight:700;font-size:10px;letter-spacing:0.14em;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(6,165,154,0.35);">★ MARKET LEADER</span>
+          </div>
+
+        </div><!-- /arch-row -->
+
+        <!-- The competitive moat — footer band -->
+        <div data-animate="fade-up" data-anim-delay="600" style="margin-top:48px;background:var(--sf-navy);border-radius:8px;padding:28px 36px;display:grid;grid-template-columns:auto 1fr auto;gap:32px;align-items:center;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);line-height:1.3;max-width:120px;">The Competitive Moat</div>
+          <div style="font-size:14px;line-height:1.65;color:rgba(255,255,255,0.78);border-left:1px solid rgba(255,255,255,0.15);padding-left:32px;">Task mining data compounds over time. The more you collect, the richer the picture, the more accurate the simulations, the more precise the quantification. <strong style="color:#fff;font-weight:700;">The sooner you start collecting, the stronger your position when it matters the most.</strong></div>
+          <div style="font-size:14px;font-weight:700;color:var(--accent);line-height:1.4;max-width:160px;border-left:1px solid rgba(255,255,255,0.15);padding-left:32px;">Most of your competitors have not started.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 · A no-cost starting point -->
+    <div class="slide" data-section="" style="background:var(--off-white);">
+      <div class="slide-body">
+        <h2 data-animate="fade-up" data-anim-delay="0" style="font-family:var(--font-display);font-size:clamp(28px, 3.2vw, 42px);font-weight:700;line-height:1.15;letter-spacing:-0.025em;color:var(--text);margin-bottom:40px;">A no-cost, low effort starting point<br/><span style="color:var(--accent);">The perfect way to test the theory on your own data</span></h2>
+
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:stretch;" data-animate="fade-up" data-anim-delay="120">
+
+          <!-- Left: narrative card -->
+          <div style="background:var(--white);border-top:3px solid var(--accent);border-radius:8px;padding:36px;display:flex;flex-direction:column;gap:18px;">
+            <div style="font-size:26px;font-weight:700;color:var(--text);line-height:1.25;letter-spacing:-0.015em;">Duplicate invoice detection on your <span style="color:var(--accent);">AP data.</span></div>
+            <p style="font-size:14px;color:var(--body);line-height:1.7;">A duplicate invoice detection exercise on your AP data. Around five hours of effort from your team. Quantified findings in two to four weeks from data receipt. Zero cost.</p>
+            <p style="font-size:14px;color:var(--body);line-height:1.7;">It does more than find duplicate invoices. It establishes the data foundation and technical integration that makes everything that follows faster. And it gives your broader team direct experience of what Process Intelligence actually does — <strong>which is the fastest way to build internal confidence.</strong></p>
+          </div>
+
+          <!-- Right: three KPI tiles -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div data-animate="scale-in" data-anim-delay="180" style="background:var(--white);border-left:3px solid var(--accent);border-radius:8px;padding:24px 28px;flex:1;display:flex;align-items:center;gap:24px;">
+              <div style="font-family:var(--font-display);font-size:42px;font-weight:400;color:var(--accent);line-height:1;letter-spacing:-0.02em;min-width:140px;">~5 <span style="font-size:24px;">hrs</span></div>
+              <div style="font-size:13px;color:var(--body);line-height:1.5;">Total effort from your team</div>
+            </div>
+            <div data-animate="scale-in" data-anim-delay="260" style="background:var(--white);border-left:3px solid var(--accent);border-radius:8px;padding:24px 28px;flex:1;display:flex;align-items:center;gap:24px;">
+              <div style="font-family:var(--font-display);font-size:42px;font-weight:400;color:var(--accent);line-height:1;letter-spacing:-0.02em;min-width:140px;">2–4 <span style="font-size:24px;">wks</span></div>
+              <div style="font-size:13px;color:var(--body);line-height:1.5;">From data to findings</div>
+            </div>
+            <div data-animate="scale-in" data-anim-delay="340" style="background:var(--white);border-left:3px solid var(--accent);border-radius:8px;padding:24px 28px;flex:1;display:flex;align-items:center;gap:24px;">
+              <div style="font-family:var(--font-display);font-size:42px;font-weight:400;color:var(--accent);line-height:1;letter-spacing:-0.02em;min-width:140px;">$0</div>
+              <div style="font-size:13px;color:var(--body);line-height:1.5;">Cost to start</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- At worst / At best footer band — vertical stack with bigger headings -->
+        <div data-animate="fade-up" data-anim-delay="420" style="margin-top:24px;background:var(--white);border-top:3px solid var(--accent);border-radius:8px;padding:32px 40px;display:grid;grid-template-columns:1fr 1px 1fr;gap:40px;align-items:start;">
+          <div>
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.01em;margin-bottom:10px;">At worst</div>
+            <div style="font-size:15px;color:var(--body);line-height:1.6;">Your finance team receives independent validation that its AP controls are working.</div>
+          </div>
+          <div style="background:var(--gray-200);width:1px;height:100%;min-height:60px;"></div>
+          <div>
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.01em;margin-bottom:10px;">At best</div>
+            <div style="font-size:15px;color:var(--body);line-height:1.6;">You identify recoverable value that funds what comes next.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 · Closing — typography-only with decorative quotation marks -->
+    <div class="slide" data-section="">
+      <div style="min-height:100vh;background:var(--grad-evening);display:flex;flex-direction:column;padding:72px 48px 56px;position:relative;overflow:hidden;">
+        <!-- Top accent line -->
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);"></div>
+
+        <!-- Decorative giant quotation marks -->
+        <div aria-hidden="true" style="position:absolute;top:60px;left:60px;font-family:Georgia, 'Times New Roman', serif;font-size:clamp(280px, 32vw, 480px);line-height:0.8;color:rgba(0,179,255,0.08);pointer-events:none;user-select:none;font-weight:700;">“</div>
+        <div aria-hidden="true" style="position:absolute;bottom:-40px;right:60px;font-family:Georgia, 'Times New Roman', serif;font-size:clamp(280px, 32vw, 480px);line-height:0.8;color:rgba(6,165,154,0.10);pointer-events:none;user-select:none;font-weight:700;">”</div>
+
+        <!-- TOP: small recap text, centered single column -->
+        <div style="max-width:780px;margin:0 auto;width:100%;position:relative;">
+          <div data-animate="fade-up" data-anim-delay="0" style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent-l);margin-bottom:18px;text-align:center;">Apromore × Salesforce</div>
+          <p data-animate="fade-up" data-anim-delay="80" style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:12px;text-align:center;">The challenges we opened with — AI, cost, supply chain — are just three examples. Every complex decision your organisation faces demands the same thing.</p>
+          <p data-animate="fade-up" data-anim-delay="140" style="font-size:14px;color:#fff;line-height:1.7;margin-bottom:12px;font-weight:600;text-align:center;">Forensic visibility. Precise quantification. The ability to simulate before you commit. That is how you address complexity with confidence.</p>
+          <p data-animate="fade-up" data-anim-delay="200" style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.7;text-align:center;">There is an easy, no-cost way to test this. <span style="color:var(--accent-l);font-weight:600;">And you win either way.</span></p>
+        </div>
+
+        <!-- CENTER: the rhetorical question (large but not overwhelming) -->
+        <div data-animate="fade-up" data-anim-delay="320" style="flex:1;display:flex;align-items:center;justify-content:center;max-width:1100px;margin:0 auto;width:100%;padding:0 24px;position:relative;">
+          <h1 style="font-family:var(--font-display);font-style:italic;font-size:clamp(28px, 3.6vw, 52px);font-weight:400;color:#fff;line-height:1.2;letter-spacing:-0.02em;text-align:center;">If you could see how your business really&nbsp;operates,<br/><span style="color:var(--accent-l);">would you run it differently?</span></h1>
+        </div>
+
+        <!-- Bottom accent -->
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sf-blue),var(--sf-blue-l),var(--accent));"></div>
+      </div>
+    </div>
+
+  </div><!-- /slide-deck -->
+
+  <!-- ─── NAVIGATION CONTROLS ────────────────────────────────── -->
+  <div class="section-label" id="section-label"></div>
+  <div class="slide-dots" id="dots"></div>
+
+  <div class="slide-controls">
+    <button class="slide-btn" id="prev" title="Previous (←)">&#8592;</button>
+    <span class="slide-counter" id="counter">1 / 6</span>
+    <button class="slide-btn" id="next" title="Next (→)">&#8594;</button>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const dotsEl = document.getElementById('dots');
+    const counterEl = document.getElementById('counter');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const sectionLabel = document.getElementById('section-label');
+    let current = 0;
+
+    slides.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.addEventListener('click', () => go(i));
+      dotsEl.appendChild(d);
+    });
+
+    function go(n) {
+      slides[current].classList.remove('active');
+      document.querySelectorAll('.dot')[current].classList.remove('active');
+      current = Math.max(0, Math.min(n, slides.length - 1));
+      slides[current].classList.add('active');
+      slides[current].scrollTop = 0;
+      document.querySelectorAll('.dot')[current].classList.add('active');
+      counterEl.textContent = `${current + 1} / ${slides.length}`;
+      sectionLabel.textContent = slides[current].dataset.section || '';
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === slides.length - 1;
+    }
+
+    prevBtn.addEventListener('click', () => go(current - 1));
+    nextBtn.addEventListener('click', () => go(current + 1));
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(current + 1);
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(current - 1);
+    });
+
+    go(0);
+  </script>
+  <script src="animation.js"></script>
+  <script>
+  /* ─── Slide 4 · Architecture diagram — auto-plays on enter ─────── */
+  (() => {
+    const NODES = ['s4-n1','s4-n2','s4-n3','s4-n4'];
+    const CONNS = ['s4-c1','s4-c2','s4-c3'];
+    const PKTS  = ['s4-p1','s4-p2','s4-p3'];
+    const seq = makeSequence();
+
+    function resetS4() {
+      seq.abort();
+      NODES.forEach(id => {
+        const n = document.getElementById(id);
+        n.classList.remove('revealed','pulsing');
+      });
+      CONNS.forEach(id => document.getElementById(id).classList.remove('active'));
+      PKTS.forEach(id  => document.getElementById(id).classList.remove('flowing'));
+    }
+
+    async function playS4() {
+      resetS4();
+      seq.run(async (guard) => {
+        // Reveal all four nodes first (staggered entrance, no packets yet)
+        for (let i = 0; i < NODES.length; i++) {
+          document.getElementById(NODES[i]).classList.add('revealed');
+          await guard(120);
+          document.getElementById(NODES[i]).classList.add('pulsing');
+          await guard(200);
+        }
+        await guard(300);
+
+        // Activate all three connectors and start all packets in the same tick
+        CONNS.forEach(id => document.getElementById(id).classList.add('active'));
+        PKTS.forEach(id => document.getElementById(id).classList.add('flowing'));
+
+        // Settle — remove pulse from all, packets keep flowing in sync
+        await guard(800);
+        NODES.forEach(id => document.getElementById(id).classList.remove('pulsing'));
+      });
+    }
+
+    // Wire into slide active observer — auto-play every time slide enters
+    const slide4 = document.getElementById('s4-arch').closest('.slide');
+    new MutationObserver(([m]) => {
+      if (slide4.classList.contains('active')) playS4();
+      else resetS4();
+    }).observe(slide4, { attributes: true, attributeFilter: ['class'] });
+
+    if (slide4.classList.contains('active')) playS4();
+  })();
+
+  </script>
+  <script src="feedback-widget.js"></script>
+
+</body>
+</html>
