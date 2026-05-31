@@ -199,24 +199,20 @@
     .close-inner { max-width: 1000px; margin: 0 auto; padding: 60px 48px; width: 100%; }
     .close-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sf-blue-l); margin-bottom: 18px; }
     .close-eyebrow::before { content: ''; width: 20px; height: 2px; background: var(--sf-blue-m); border-radius: 2px; }
-    .close-title { font-family: var(--font-display); font-size: clamp(28px, 3.3vw, 42px); font-weight: 700; color: #fff; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 22px; }
-    .close-body { font-size: 15.5px; color: rgba(255,255,255,0.74); line-height: 1.75; max-width: 660px; margin-bottom: 15px; }
+    .close-hero { font-family: var(--font-display); font-size: clamp(40px, 5vw, 64px); font-weight: 700; color: #fff; line-height: 1.03; letter-spacing: -0.03em; margin-bottom: 18px; }
+    .close-title { font-family: var(--font-display); font-size: clamp(19px, 2.1vw, 25px); font-weight: 700; color: #fff; letter-spacing: -0.018em; line-height: 1.2; margin-bottom: 14px; }
+    .close-body { font-size: 14.5px; color: rgba(255,255,255,0.74); line-height: 1.7; max-width: 620px; margin-bottom: 12px; }
     .close-body em { color: #fff; font-style: italic; }
     .site-link {
-      display: inline-flex; flex-direction: column; gap: 3px;
-      margin: 24px 0 8px; padding: 15px 24px; text-decoration: none;
-      border: 1.5px dashed rgba(6,106,254,0.75); border-radius: 11px;
-      background: rgba(6,106,254,0.14);
+      display: inline-flex; align-items: center; gap: 10px;
+      margin: 18px 0 6px; padding: 13px 26px; text-decoration: none; border-radius: 10px;
+      background: #fff; box-shadow: 0 8px 22px rgba(0,0,0,0.28);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
-    .site-link .slp-label { font-size: 14px; font-weight: 700; color: #fff; }
-    .site-link .slp-note { font-size: 11.5px; letter-spacing: 0.03em; color: var(--sf-blue-l); }
-    .close-q {
-      margin-top: 38px;
-      font-family: var(--font-display); font-size: clamp(28px, 4.1vw, 54px);
-      font-weight: 700; font-style: italic; color: #fff; line-height: 1.18; letter-spacing: -0.025em;
-      max-width: 1000px;
-    }
-    .close-q .hl { color: var(--sf-blue-l); }
+    .site-link:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.34); }
+    .site-link .slp-label { font-size: 15px; font-weight: 700; color: var(--sf-navy); }
+    .site-link .slp-arrow { font-size: 17px; font-weight: 700; color: var(--sf-blue-m); }
+    .close-tail { margin-top: 28px; font-family: var(--font-display); font-size: clamp(36px, 4.4vw, 56px); font-weight: 700; color: var(--sf-blue-l); line-height: 1.05; letter-spacing: -0.03em; }
 
     /* ── Responsive ──────────────────────────────────────────────────── */
     @media (max-width: 900px) {
@@ -541,18 +537,19 @@
       <div class="slide-close">
         <div class="close-inner">
           <div class="close-eyebrow" data-animate="fade-up" data-anim-delay="0">Where to begin</div>
-          <div class="close-title" data-animate="fade-up" data-anim-delay="80">Start where your priorities are.</div>
-          <p class="close-body" data-animate="fade-up" data-anim-delay="160">The pressures we opened with — AI, cost, supply chain — are three examples. The same principle applies to almost every complex, cross-functional decision your organisation faces.</p>
-          <p class="close-body" data-animate="fade-up" data-anim-delay="220">The right place to begin isn't a generic demonstration. It's a focused look at the process most relevant to <em>your</em> priorities, <em>your</em> industry, and <em>your</em> role.</p>
+          <div class="close-hero" data-animate="fade-up" data-anim-delay="60">Knowledge is power.</div>
+          <div class="close-title" data-animate="fade-up" data-anim-delay="140">Start where your priorities are.</div>
+          <p class="close-body" data-animate="fade-up" data-anim-delay="200">AI, cost, supply chain are three examples. The same principle applies to every complex, cross-functional decision your organisation faces.</p>
+          <p class="close-body" data-animate="fade-up" data-anim-delay="250">The right place to begin isn't a generic demonstration. It's a focused look at the process most relevant to <em>your</em> priorities, <em>your</em> industry, and <em>your</em> role.</p>
 
-          <a class="site-link" href="#" data-animate="fade-up" data-anim-delay="280" aria-label="Site link placeholder — to be provided">
+          <a class="site-link" href="https://scottt1234.github.io/top-30-processes-v2/" target="_blank" rel="noopener" data-animate="fade-up" data-anim-delay="300" aria-label="Choose where you want clarity first">
             <span class="slp-label">Choose where you want clarity first</span>
-            <span class="slp-note">[ Insert site link — to be provided ]</span>
+            <span class="slp-arrow">&#8594;</span>
           </a>
 
-          <p class="close-body" data-animate="fade-up" data-anim-delay="320">We'll show you what's possible — on your own data, at low risk — and you can decide from there.</p>
+          <p class="close-body" data-animate="fade-up" data-anim-delay="350">We'll show you what's possible on your own data, at low risk. You decide from there.</p>
 
-          <div class="close-q" data-animate="fade-up" data-anim-delay="420">If you could see how your business really operates, <span class="hl">would you run it differently?</span></div>
+          <div class="close-tail" data-animate="fade-up" data-anim-delay="440">Apromore gives you both.</div>
         </div>
       </div>
     </div>
