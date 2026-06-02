@@ -491,9 +491,16 @@
     .sd .either-b strong { color: #fff; }
 
     /* slide 3 — convergence diagram */
-    .cv-link { display: block; width: 100%; max-width: 980px; height: auto; margin: 4px auto 2px; }
-    .cv-edge { stroke: var(--sf-blue-l); stroke-width: 2.2; fill: none; stroke-dasharray: 480; stroke-dashoffset: 480; opacity: 0.9; }
-    .slide.active .cv-edge { animation: piDraw .9s .9s ease-out forwards; }
+    .cv-link { display: block; width: 100%; height: 92px; margin: 2px auto 0; }
+    .cv-link path { stroke: var(--sf-blue-l); fill: none; opacity: 0.9; }
+    .cv-drop { stroke-width: 2.2; stroke-dasharray: 60; stroke-dashoffset: 60; }
+    .cv-bus  { stroke-width: 2.2; stroke-dasharray: 720; stroke-dashoffset: 720; }
+    .cv-stem { stroke-width: 2.2; stroke-dasharray: 70; stroke-dashoffset: 70; }
+    .cv-dot  { fill: var(--sf-blue-l); opacity: 0; }
+    .slide.active .cv-dot  { animation: piPop .3s .85s ease-out forwards; }
+    .slide.active .cv-drop { animation: piDraw .45s .9s ease-out forwards; }
+    .slide.active .cv-bus  { animation: piDraw .6s 1.35s ease-out forwards; }
+    .slide.active .cv-stem { animation: piDraw .45s 1.95s ease-out forwards; }
     .cv-node {
       width: max-content; max-width: 92%; margin: 0 auto; text-align: center;
       background: rgba(143,184,255,0.12); border: 1px solid rgba(143,184,255,0.55); border-radius: 14px;
@@ -501,14 +508,15 @@
       opacity: 0; transform: translateY(8px);
     }
     .cv-node .cv-node-k { color: var(--sf-blue-l); display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
-    .slide.active .cv-node { animation: cvNode .8s 1.5s var(--ease-out) forwards; }
+    .slide.active .cv-node { animation: cvNode .7s 2.3s var(--ease-out) forwards; }
 
     /* slide 8 — close: pulse the CTA so the action draws the eye */
     .slide.active .site-link { animation: ctaPulse 2.4s 1s ease-in-out infinite; }
 
     @media (prefers-reduced-motion: reduce) {
       .sd .evidence-contrast .ec-chip, .sd .evidence-contrast .ec-arrow { opacity: 1 !important; animation: none !important; }
-      .cv-edge { stroke-dashoffset: 0 !important; animation: none !important; }
+      .cv-link path { stroke-dashoffset: 0 !important; animation: none !important; }
+      .cv-dot { opacity: 1 !important; animation: none !important; }
       .cv-node { opacity: 1 !important; transform: none !important; animation: none !important; }
       .slide.active .site-link { animation: none !important; }
     }
@@ -522,7 +530,7 @@
     .sd .thread-card { padding: 15px 18px; }
     .sd .thread-card .ci { width: 42px !important; height: 42px !important; }
     .sd .thread-text { font-size: 14px; }
-    .cv-link { max-width: 860px !important; }
+    .cv-link { max-width: none !important; }
     .cv-node { padding: 12px 24px !important; font-size: 14.5px !important; margin-bottom: 32px !important; }
 
     /* Slide 5 — cards fall in, one at a time, from under the card above */
@@ -692,10 +700,15 @@
           </div>
         </div>
 
-        <svg class="cv-link" viewBox="0 0 1000 40" aria-hidden="true">
-          <path class="cv-edge" d="M166 2 L500 40"/>
-          <path class="cv-edge" d="M500 2 L500 40"/>
-          <path class="cv-edge" d="M834 2 L500 40"/>
+        <svg class="cv-link" viewBox="0 0 1000 96" preserveAspectRatio="none" aria-hidden="true">
+          <path class="cv-drop" d="M161 0 L161 44"/>
+          <path class="cv-drop" d="M500 0 L500 44"/>
+          <path class="cv-drop" d="M839 0 L839 44"/>
+          <path class="cv-bus"  d="M161 44 L839 44"/>
+          <path class="cv-stem" d="M500 44 L500 96"/>
+          <circle class="cv-dot" cx="161" cy="2" r="4"/>
+          <circle class="cv-dot" cx="500" cy="2" r="4"/>
+          <circle class="cv-dot" cx="839" cy="2" r="4"/>
         </svg>
         <div class="cv-node"><span class="cv-node-k">The one foundation</span>Seeing how your business actually works today.</div>
 
