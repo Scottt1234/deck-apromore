@@ -508,7 +508,7 @@
       opacity: 0; transform: translateY(8px);
     }
     .cv-node .cv-node-k { color: var(--sf-blue-l); display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
-    .slide.active .cv-node { animation: cvNode .7s 2.3s var(--ease-out) forwards; }
+    .slide.active .cv-node { animation: cvNode .7s 2.55s var(--ease-out) forwards; }
 
     /* slide 8 — close: pulse the CTA so the action draws the eye */
     .slide.active .site-link { animation: ctaPulse 2.4s 1s ease-in-out infinite; }
@@ -704,7 +704,8 @@
           <path class="cv-drop" d="M161 0 L161 44"/>
           <path class="cv-drop" d="M500 0 L500 44"/>
           <path class="cv-drop" d="M839 0 L839 44"/>
-          <path class="cv-bus"  d="M161 44 L839 44"/>
+          <path class="cv-bus cv-bus-l" d="M161 44 L500 44"/>
+          <path class="cv-bus cv-bus-r" d="M839 44 L500 44"/>
           <path class="cv-stem" d="M500 44 L500 96"/>
           <circle class="cv-dot" cx="161" cy="2" r="4"/>
           <circle class="cv-dot" cx="500" cy="2" r="4"/>
