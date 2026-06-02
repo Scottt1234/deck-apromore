@@ -221,11 +221,20 @@
       color: var(--sf-blue-m); opacity: 0.55; z-index: 3; pointer-events: none;
       text-shadow: 0 0 4px #eef4ff, 0 0 4px #eef4ff;
     }
+    /* tablet — 5 layers wrap to 3 columns before they get cramped; connectors only read in a single row */
+    @media (max-width: 1000px) {
+      .layer-cards-5 { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .layer-cards-5 .layer-card:not(:last-child)::after { display: none; }
+    }
     @media (max-width: 760px) {
       .layer-cards-5 { grid-template-columns: repeat(2, 1fr); }
       .layer-cards-5 .layer-card:not(:last-child)::after { display: none; }
-      .access-band { flex-wrap: wrap; }
+      .ci-shell-head { flex-wrap: wrap; }
       .access-band-tag { margin-left: 0; }
+    }
+    /* phones — a single comfortable column rather than two cramped ones */
+    @media (max-width: 560px) {
+      .layer-cards-5 { grid-template-columns: 1fr; gap: 10px; }
     }
 
     /* ── Slide 7 · Either way ────────────────────────────────────────── */
@@ -258,11 +267,11 @@
 
     /* ── Responsive ──────────────────────────────────────────────────── */
     @media (max-width: 900px) {
-      .slide-body { padding: 76px 24px 96px; }
+      .slide-body { padding: 76px 24px 150px; }
       .thread { grid-template-columns: 1fr; gap: 18px; }
       .split5 { grid-template-columns: 1fr; gap: 28px; }
       .either { grid-template-columns: 1fr; }
-      .close-inner { padding: 76px 24px; }
+      .close-inner { padding: 76px 24px 150px; }
     }
   </style>
 </head>
