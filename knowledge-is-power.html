@@ -199,8 +199,7 @@
     .close-inner { max-width: 1000px; margin: 0 auto; padding: 60px 48px; width: 100%; }
     .close-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sf-blue-l); margin-bottom: 18px; }
     .close-eyebrow::before { content: ''; width: 20px; height: 2px; background: var(--sf-blue-m); border-radius: 2px; }
-    .close-hero { font-family: var(--font-display); font-size: clamp(40px, 5vw, 64px); font-weight: 700; color: #fff; line-height: 1.03; letter-spacing: -0.03em; margin-bottom: 18px; }
-    .close-title { font-family: var(--font-display); font-size: clamp(19px, 2.1vw, 25px); font-weight: 700; color: #fff; letter-spacing: -0.018em; line-height: 1.2; margin-bottom: 14px; }
+    .close-title { font-family: var(--font-display); font-size: clamp(30px, 3.4vw, 44px); font-weight: 700; color: #fff; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 18px; }
     .close-body { font-size: 14.5px; color: rgba(255,255,255,0.74); line-height: 1.7; max-width: 620px; margin-bottom: 12px; }
     .close-body em { color: #fff; font-style: italic; }
     .site-link {
@@ -212,7 +211,7 @@
     .site-link:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.34); }
     .site-link .slp-label { font-size: 15px; font-weight: 700; color: var(--sf-navy); }
     .site-link .slp-arrow { font-size: 17px; font-weight: 700; color: var(--sf-blue-m); }
-    .close-tail { margin-top: 28px; font-family: var(--font-display); font-size: clamp(36px, 4.4vw, 56px); font-weight: 700; color: var(--sf-blue-l); line-height: 1.05; letter-spacing: -0.03em; }
+    .close-tail { margin-top: 28px; font-family: var(--font-display); font-size: clamp(36px, 4.4vw, 56px); font-weight: 700; color: #fff; line-height: 1.1; letter-spacing: -0.03em; }
 
     /* ── Responsive ──────────────────────────────────────────────────── */
     @media (max-width: 900px) {
@@ -307,8 +306,8 @@
     <div class="slide" data-section="The Common Thread">
       <div class="slide-body">
         <div class="eyebrow" data-animate="fade-up" data-anim-delay="0">The common thread</div>
-        <div class="section-title" data-animate="fade-up" data-anim-delay="60">Three pressures.<br/>One thing in common.</div>
-        <div class="section-sub" data-animate="fade-up" data-anim-delay="120">These are high-stakes decisions with limited room for error. And they all depend on the same foundation.</div>
+        <div class="section-title" data-animate="fade-up" data-anim-delay="60">Three pressures. One thing in common.<br/><span style="color:var(--sf-blue-m)">Limited room for error.</span></div>
+        <div class="section-sub" data-animate="fade-up" data-anim-delay="120">And they all depend on the same foundation.</div>
 
         <div class="thread">
           <div class="card card-accent-blue thread-card" data-animate="scale-in" data-anim-delay="200">
@@ -357,7 +356,7 @@
         <div class="section-title" data-animate="fade-up" data-anim-delay="60">You're already making these decisions.<br/><span style="color:var(--sf-blue-m)">How confident are you in what they're based on?</span></div>
 
         <div class="prose" style="margin-top:28px;">
-          <div class="lead-big" data-animate="fade-up" data-anim-delay="140">How many business cases have you seen that were built on benchmarks, best estimates, and assumptions? How many delivered exactly what they promised?</div>
+          <div class="lead-big" data-animate="fade-up" data-anim-delay="140">How many business cases have you seen that were built on benchmarks, best estimates, and assumptions? How many delivered what they promised?</div>
           <p data-animate="fade-up" data-anim-delay="220">Smart people making smart decisions on incomplete data will always be <strong>outperformed by the same people with real evidence.</strong></p>
           <div class="evidence-contrast" data-animate="fade-up" data-anim-delay="300" aria-hidden="true">
             <span class="ec-chip ec-dashed">Benchmarks</span>
@@ -370,7 +369,7 @@
 
         <div data-animate="fade-up" data-anim-delay="320" style="margin-top:34px;">
           <div class="rule-accent"></div>
-          <div class="statement">Some decisions are too important to make on anything less than <span class="hl">real knowledge.</span></div>
+          <div class="statement">Some decisions are too important to make on anything less than <span class="hl">real evidence.</span></div>
         </div>
       </div>
     </div>
@@ -537,8 +536,7 @@
       <div class="slide-close">
         <div class="close-inner">
           <div class="close-eyebrow" data-animate="fade-up" data-anim-delay="0">Where to begin</div>
-          <div class="close-hero" data-animate="fade-up" data-anim-delay="60">Knowledge is power.</div>
-          <div class="close-title" data-animate="fade-up" data-anim-delay="140">Start where your priorities are.</div>
+          <div class="close-title" data-animate="fade-up" data-anim-delay="60">Start where your priorities are.</div>
           <p class="close-body" data-animate="fade-up" data-anim-delay="200">AI, cost, supply chain are three examples. The same principle applies to every complex, cross-functional decision your organisation faces.</p>
           <p class="close-body" data-animate="fade-up" data-anim-delay="250">The right place to begin isn't a generic demonstration. It's a focused look at the process most relevant to <em>your</em> priorities, <em>your</em> industry, and <em>your</em> role.</p>
 
@@ -549,7 +547,7 @@
 
           <p class="close-body" data-animate="fade-up" data-anim-delay="350">We'll show you what's possible on your own data, at low risk. You decide from there.</p>
 
-          <div class="close-tail" data-animate="fade-up" data-anim-delay="440">Apromore gives you both.</div>
+          <div class="close-tail" data-animate="fade-up" data-anim-delay="440">Knowledge is power.<br/><span style="color:var(--sf-blue-l)">Apromore gives you both.</span></div>
         </div>
       </div>
     </div>
