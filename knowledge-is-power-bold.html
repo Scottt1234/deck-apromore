@@ -540,7 +540,10 @@
       background: #aacbff; box-shadow: 0 0 14px 4px rgba(143,184,255,0.85); opacity: 0; }
     .slide-pi.active .pi-pulse { animation: none !important; opacity: 0; }
     .slide-pi.pi-go .pi-line { opacity: 1; }
-    .slide-pi.pi-go .pi-pulse { opacity: 1 !important; animation: piTravel 5.6s 0.2s linear 1 both !important; }
+    .slide-pi.pi-go .pi-pulse { opacity: 1 !important; animation: piTravel 4.5s 0s linear 1 both !important; }
+
+    /* remove the top-right section labels on every slide */
+    .section-label { display: none !important; }
 
     /* Slide 6 — full description text, top-aligned in every card; equal-height cards; no special highlight */
     .pi-stage { justify-content: flex-start; min-height: 0; }
@@ -999,17 +1002,17 @@
           // 1) the question types first, alone
           if (q) { typeInto(q, QUERY, 26, guard).catch(() => {}); setTimeout(() => { if (q && !q.textContent) q.textContent = QUERY; }, 2600); }
           await guard(2300);
-          // 2) the connecting line + slow pulse appear beneath the question
+          // 2) the connecting line + pulse appear beneath the question (pulse crosses in 4.5s)
           slide.classList.add('pi-go');
-          await guard(500);
-          // 3) the layers ignite left-to-right, slowly
+          // 3) each layer ignites as the pulse reaches it (pulse pos = t / 4.5s of the width)
+          await guard(450);
           for (const st of stages) {
             st.classList.add('on');
             if (st.dataset.stage === '3' && metric) {
               countUp(metric, 38, 900);
               setTimeout(() => { if (metric && (metric.textContent === '0' || metric.textContent === '')) metric.textContent = '38'; }, 1200);
             }
-            await guard(760);
+            await guard(900);
           }
         });
       }
