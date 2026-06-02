@@ -513,6 +513,55 @@
       .slide.active .site-link { animation: none !important; }
     }
   </style>
+
+  <!-- ════════ FEEDBACK ROUND 1 — refinements ════════ -->
+  <style>
+    /* Slide 3 — compact, and a clean line draw (pathLength normalised) */
+    .slide[data-section="The Common Thread"] .section-sub { margin-bottom: 18px !important; }
+    .sd .thread { margin: 4px 0 10px !important; gap: 16px; }
+    .sd .thread-card { padding: 15px 18px; }
+    .sd .thread-card .ci { width: 42px !important; height: 42px !important; }
+    .sd .thread-text { font-size: 14px; }
+    .cv-edge { stroke-dasharray: 1 !important; stroke-dashoffset: 1 !important; }
+    .cv-link { height: 30px !important; margin: 0 auto 2px !important; }
+    .cv-node { padding: 12px 24px !important; font-size: 14.5px !important; }
+
+    /* Slide 5 — cards fall in, one at a time, from under the card above */
+    .fall { opacity: 0; }
+    .slide.active .fall { animation: fallIn .5s var(--ease-out) both; animation-delay: calc(0.45s + var(--d,0) * 0.36s); }
+    @keyframes fallIn { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: none; } }
+
+    /* Slide 6 — connecting line BENEATH the question (not over the cards), slow pulse after typing */
+    .pi-line {
+      position: relative; top: auto; left: 0; right: 0; width: 100%; height: 2px; border-radius: 2px;
+      margin: 2px 0 22px; opacity: 0; transition: opacity .5s ease;
+      background: linear-gradient(90deg, rgba(143,184,255,0.10), rgba(143,184,255,0.5), rgba(143,184,255,0.10));
+    }
+    .pi-pulse { position: absolute; top: -4px; left: 0; width: 9px; height: 9px; border-radius: 50%;
+      background: #aacbff; box-shadow: 0 0 14px 4px rgba(143,184,255,0.85); opacity: 0; }
+    .slide-pi.active .pi-pulse { animation: none !important; opacity: 0; }
+    .slide-pi.pi-go .pi-line { opacity: 1; }
+    .slide-pi.pi-go .pi-pulse { opacity: 1 !important; animation: piTravel 5.6s 0.2s linear 1 both !important; }
+
+    /* Slide 6 — full description text, top-aligned in every card; equal-height cards; no special highlight */
+    .pi-stage { justify-content: flex-start; min-height: 0; }
+    .pi-desc { font-size: 11px; color: rgba(255,255,255,0.74); line-height: 1.45; margin: 2px 0 12px; min-height: 60px; }
+    .pi-viz { flex: 1; min-height: 76px; }
+    .pi-stage.is-rec.on { border-color: rgba(255,255,255,0.12); box-shadow: 0 14px 36px rgba(0,0,0,0.34); }
+
+    /* Slide 8 — same background as the hero */
+    .slide-close {
+      background:
+        radial-gradient(80% 120% at 80% 10%, rgba(56,128,255,0.55), transparent 60%),
+        radial-gradient(70% 90% at 10% 98%, rgba(6,106,254,0.42), transparent 55%),
+        linear-gradient(155deg, #020e30 0%, #06246b 46%, #0a59f0 100%) !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fall { opacity: 1 !important; animation: none !important; }
+      .slide-pi.pi-go .pi-pulse { animation: none !important; }
+    }
+  </style>
 </head>
 <body>
 
@@ -637,9 +686,9 @@
         </div>
 
         <svg class="cv-link" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
-          <path class="cv-edge" d="M16.7 0 C 16.7 22, 50 6, 50 32"/>
-          <path class="cv-edge" d="M50 0 L 50 32"/>
-          <path class="cv-edge" d="M83.3 0 C 83.3 22, 50 6, 50 32"/>
+          <path class="cv-edge" pathLength="1" d="M16.7 0 C 16.7 22, 50 6, 50 32"/>
+          <path class="cv-edge" pathLength="1" d="M50 0 L 50 32"/>
+          <path class="cv-edge" pathLength="1" d="M83.3 0 C 83.3 22, 50 6, 50 32"/>
         </svg>
         <div class="cv-node"><span class="cv-node-k">The one foundation</span>Seeing how your business actually works today.</div>
 
@@ -688,9 +737,9 @@
             <p>Complex processes — such as AI deployment, cost reduction, supply chain agility — traverse multiple systems, platforms and people. The invisible work that happens between them — the workarounds, the delays, the human judgement calls — is what Process Mining alone cannot see.</p>
           </div>
 
-          <div class="changes" data-animate="scale-in" data-anim-delay="240">
-            <div class="changes-h">What has changed</div>
-            <div class="card card-accent-blue change-card">
+          <div class="changes">
+            <div class="changes-h" data-animate="fade-up" data-anim-delay="160">What has changed</div>
+            <div class="card card-accent-blue change-card fall" style="--d:0">
               <div class="ci ci-accent" style="width:30px;height:30px;" aria-hidden="true">
                 <svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M5 7h22v15H14l-6 5v-5H5z"/>
@@ -702,7 +751,7 @@
                 <div class="change-desc">Ask questions in plain language across every layer. No specialist required.</div>
               </div>
             </div>
-            <div class="card card-accent-blue change-card">
+            <div class="card card-accent-blue change-card fall" style="--d:1">
               <div class="ci ci-accent" style="width:30px;height:30px;" aria-hidden="true">
                 <svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7">
                   <circle cx="16" cy="16" r="3"/><circle cx="6.5" cy="7.5" r="2.4"/><circle cx="25.5" cy="7.5" r="2.4"/>
@@ -715,7 +764,7 @@
                 <div class="change-desc">Captures the work that happens between systems — the invisible steps, workarounds, and handoffs that process mining never sees.</div>
               </div>
             </div>
-            <div class="card card-accent-blue change-card">
+            <div class="card card-accent-blue change-card fall" style="--d:2">
               <div class="ci ci-accent" style="width:30px;height:30px;" aria-hidden="true">
                 <svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M16 4a8.5 8.5 0 0 0-5 15.4c0.9 0.7 1.4 1.5 1.6 2.6h6.8c0.2-1.1 0.7-1.9 1.6-2.6A8.5 8.5 0 0 0 16 4z"/>
@@ -727,7 +776,7 @@
                 <div class="change-desc">AI identifies the specific change to make, not just the problem. Moves from diagnosis to prescription.</div>
               </div>
             </div>
-            <div class="card card-accent-blue change-card">
+            <div class="card card-accent-blue change-card fall" style="--d:3">
               <div class="ci ci-accent" style="width:30px;height:30px;" aria-hidden="true">
                 <svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
                   <line x1="16" y1="4" x2="16" y2="28" stroke-dasharray="2 2.6"/>
@@ -764,24 +813,26 @@
           <span class="pi-ask-q" id="piQuery"></span><span class="pi-caret" id="piCaret" aria-hidden="true"></span>
         </div>
 
+        <div class="pi-line"><span class="pi-pulse"></span></div>
+
         <div class="pi-flow">
-          <div class="pi-line"><span class="pi-pulse"></span></div>
 
           <div class="pi-stage" data-stage="1">
             <div class="pi-num">01</div>
             <div class="pi-name">Process Mining</div>
+            <div class="pi-desc">Maps how a process runs inside a single system — bottlenecks, variants, rework.</div>
             <div class="pi-viz">
               <svg class="pi-map" viewBox="0 0 120 64" fill="none" aria-hidden="true">
                 <path class="edge" d="M14 32 H46"/><path class="edge" d="M46 32 L80 16"/><path class="edge" d="M46 32 L80 48"/><path class="edge" d="M80 16 L106 32"/><path class="edge" d="M80 48 L106 32"/>
                 <circle cx="14" cy="32" r="5.5"/><circle cx="46" cy="32" r="5.5"/><circle cx="80" cy="16" r="5.5"/><circle cx="80" cy="48" r="5.5"/><circle cx="106" cy="32" r="5.5"/>
               </svg>
             </div>
-            <div class="pi-cap">Maps how the process really runs</div>
           </div>
 
           <div class="pi-stage" data-stage="2">
             <div class="pi-num">02</div>
             <div class="pi-name">Task Mining</div>
+            <div class="pi-desc">Captures the work between systems, at the desktop — where inefficiencies hide.</div>
             <div class="pi-viz">
               <svg class="pi-map" viewBox="0 0 120 64" fill="none" aria-hidden="true">
                 <path class="edge" d="M18 40 C 42 6, 78 6, 102 40"/>
@@ -789,33 +840,32 @@
                 <circle cx="44" cy="17" r="2.4"/><circle cx="60" cy="12" r="2.4"/><circle cx="76" cy="17" r="2.4"/>
               </svg>
             </div>
-            <div class="pi-cap">Captures the work between systems</div>
           </div>
 
           <div class="pi-stage" data-stage="3">
             <div class="pi-num">03</div>
             <div class="pi-name">Analysis</div>
+            <div class="pi-desc">Quantifies the cost of inefficiency and the value of recoverable waste.</div>
             <div class="pi-viz"><div><span class="pi-metric" id="piMetric">0</span><span class="pi-metric pi-metric-suffix">%</span></div></div>
-            <div class="pi-cap">of cases take the slow path</div>
           </div>
 
-          <div class="pi-stage is-rec" data-stage="4">
+          <div class="pi-stage" data-stage="4">
             <div class="pi-num">04</div>
             <div class="pi-name">Recommendation</div>
+            <div class="pi-desc">AI proposes the specific change to make — not just the problem, but the mechanism that fixes it.</div>
             <div class="pi-viz"><div class="pi-rec">Auto-approve low-risk claims</div></div>
-            <div class="pi-cap">The specific change to make — powered by AI</div>
           </div>
 
           <div class="pi-stage" data-stage="5">
             <div class="pi-num">05</div>
             <div class="pi-name">Simulation</div>
+            <div class="pi-desc">Validates the recommendation — models the impact before you commit.</div>
             <div class="pi-viz">
               <div class="pi-bars">
                 <div class="pi-barwrap"><div class="pi-bar pi-bar-before"></div><span class="pi-barlbl">30d</span></div>
                 <div class="pi-barwrap"><div class="pi-bar pi-bar-after"></div><span class="pi-barlbl">12d</span></div>
               </div>
             </div>
-            <div class="pi-cap">Proven before you commit</div>
           </div>
         </div>
 
@@ -942,21 +992,25 @@
       const stages = [...slide.querySelectorAll('.pi-stage')];
       const QUERY = 'Where is our complaints process losing time?';
       const seq = makeSequence();
-      function reset() { if (q) q.textContent = ''; if (metric) metric.textContent = '0'; stages.forEach(s => s.classList.remove('on')); }
+      function reset() { if (q) q.textContent = ''; if (metric) metric.textContent = '0'; slide.classList.remove('pi-go'); stages.forEach(s => s.classList.remove('on')); }
       function run() {
         reset();
         seq.run(async (guard) => {
           await guard(450);
-          // typing is an enhancement — never block the reveal on it; fall back to full text
+          // 1) the question types first, alone
           if (q) { typeInto(q, QUERY, 26, guard).catch(() => {}); setTimeout(() => { if (q && !q.textContent) q.textContent = QUERY; }, 2600); }
-          await guard(1700);
+          await guard(2300);
+          // 2) the connecting line + slow pulse appear beneath the question
+          slide.classList.add('pi-go');
+          await guard(500);
+          // 3) the layers ignite left-to-right, slowly
           for (const st of stages) {
             st.classList.add('on');
             if (st.dataset.stage === '3' && metric) {
-              countUp(metric, 38, 850);
-              setTimeout(() => { if (metric && (metric.textContent === '0' || metric.textContent === '')) metric.textContent = '38'; }, 1100);
+              countUp(metric, 38, 900);
+              setTimeout(() => { if (metric && (metric.textContent === '0' || metric.textContent === '')) metric.textContent = '38'; }, 1200);
             }
-            await guard(560);
+            await guard(760);
           }
         });
       }
