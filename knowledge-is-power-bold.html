@@ -510,8 +510,22 @@
     .cv-node .cv-node-k { color: var(--sf-blue-l); display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
     .slide.active .cv-node { animation: cvNode .7s 2.55s var(--ease-out) forwards; }
 
-    /* slide 8 — close: pulse the CTA so the action draws the eye */
-    .slide.active .site-link { animation: ctaPulse 2.4s 1s ease-in-out infinite; }
+    /* slide 8 — CTA redesigned to match the deck's electric-blue accent language */
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 10px 30px rgba(6,106,254,0.40); }
+      50%      { box-shadow: 0 14px 42px rgba(86,150,255,0.78); }
+    }
+    .slide-close .site-link {
+      background: linear-gradient(180deg, #2f86ff 0%, #066afe 100%) !important;
+      border: 1px solid rgba(170,205,255,0.55);
+      box-shadow: 0 10px 30px rgba(6,106,254,0.40);
+      padding: 15px 30px;
+    }
+    .slide-close .site-link .slp-label { color: #fff; }
+    .slide-close .site-link .slp-arrow { color: #fff; transition: transform .18s ease; }
+    .slide-close .site-link:hover { transform: translateY(-2px); box-shadow: 0 16px 44px rgba(6,106,254,0.62); }
+    .slide-close .site-link:hover .slp-arrow { transform: translateX(4px); }
+    .slide.active .site-link { animation: ctaPulse 2.6s 1s ease-in-out infinite; }
 
     @media (prefers-reduced-motion: reduce) {
       .sd .evidence-contrast .ec-chip, .sd .evidence-contrast .ec-arrow { opacity: 1 !important; animation: none !important; }
