@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Process You Think You Have · Apromore × Salesforce</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <style>
+    /* ───────────────────────────────────────────────────────────────
+       Process Reality — animated "designed vs. believed vs. actual"
+       A single-file token-replay animation. No external JS libraries.
+       Built on the Salesforce 2026 token palette (tokens.css).
+       ─────────────────────────────────────────────────────────────── */
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background: radial-gradient(120% 120% at 50% 0%, #022AC0 0%, #001433 55%, #000A1F 100%);
+      font-family: var(--font-body);
+      color: #fff;
+    }
+
+    #stage { position: fixed; inset: 0; }
+    #fx { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    /* Layer that holds DOM node labels / volume badges, synced to canvas each frame */
+    #labels { position: absolute; inset: 0; pointer-events: none; }
+    .nlabel {
+      position: absolute; transform: translate(-50%, -50%);
+      font-size: 13px; font-weight: 600; line-height: 1.15; white-space: nowrap;
+      color: rgba(255,255,255,0.92); text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+      opacity: 0; transition: opacity 0.4s ease; will-change: transform, opacity;
+    }
+    .vbadge {
+      position: absolute; transform: translate(-50%, -50%);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.01em;
+      color: #fff; background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 2px 7px; border-radius: 5px;
+      opacity: 0; transition: opacity 0.4s ease; will-change: transform, opacity;
+    }
+
+    /* Brand chip */
+    .brand {
+      position: absolute; top: 26px; left: 30px; z-index: 6;
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.94); border-radius: 40px; padding: 7px 15px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+    }
+    .brand .nm { font-size: 12px; font-weight: 700; color: #5B3BD0; }
+    .brand .x  { font-size: 13px; color: var(--gray-500); }
+    .brand img { display: block; }
+    .illus {
+      position: absolute; top: 30px; right: 32px; z-index: 6;
+      font-size: 12px; font-style: italic; color: rgba(255,255,255,0.55);
+    }
+
+    /* Caption — cross-fading per act */
+    #caption {
+      position: absolute; left: 50%; top: 8.5%; transform: translateX(-50%);
+      z-index: 5; text-align: center; pointer-events: none; width: min(90vw, 760px);
+    }
+    #cap-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--sf-blue-l); margin-bottom: 10px;
+    }
+    #cap-title {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(26px, 4.2vw, 46px); line-height: 1.08; letter-spacing: -0.02em;
+      margin: 0; color: #fff;
+    }
+    #cap-sub {
+      font-size: clamp(13px, 1.5vw, 17px); line-height: 1.5;
+      color: rgba(255,255,255,0.66); margin: 12px auto 0; max-width: 560px;
+    }
+    .cap-fade { animation: capIn 0.7s var(--ease-out, cubic-bezier(0,0,0.2,1)) both; }
+    @keyframes capIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+    /* Stat chips (bottom-left) */
+    #stats {
+      position: absolute; left: 30px; bottom: 28px; z-index: 5;
+      display: flex; gap: 26px; pointer-events: none;
+    }
+    .stat .v {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(22px, 3vw, 34px); line-height: 1; letter-spacing: -0.01em;
+      color: #fff; font-variant-numeric: tabular-nums;
+    }
+    .stat .v.hot { color: var(--yellow-l); }
+    .stat .k {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5); margin-top: 7px;
+    }
+
+    /* Controls (bottom-right) */
+    #controls {
+      position: absolute; right: 30px; bottom: 30px; z-index: 7;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .seg {
+      display: inline-flex; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16); border-radius: 30px; padding: 4px;
+      backdrop-filter: blur(6px);
+    }
+    .seg button {
+      appearance: none; border: 0; background: transparent; cursor: pointer;
+      color: rgba(255,255,255,0.62); font-family: var(--font-body);
+      font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+      padding: 8px 16px; border-radius: 24px; transition: all 0.2s ease;
+    }
+    .seg button:hover { color: #fff; }
+    .seg button.on { background: #fff; color: #022AC0; }
+    .replay {
+      appearance: none; cursor: pointer; font-family: var(--font-body);
+      font-size: 12px; font-weight: 700; color: #fff;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 24px; padding: 9px 16px; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .replay:hover { background: rgba(255,255,255,0.16); }
+
+    /* Punchline overlay (end of act 3) */
+    #punch {
+      position: absolute; left: 50%; bottom: 19%; transform: translateX(-50%);
+      z-index: 5; text-align: center; width: min(90vw, 680px); pointer-events: none;
+      opacity: 0; transition: opacity 1.1s ease;
+    }
+    #punch .big {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(17px, 2.2vw, 26px); line-height: 1.25; letter-spacing: -0.01em;
+      color: #fff;
+    }
+    #punch .big em { color: var(--yellow-l); font-style: normal; }
+    #punch .small { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 10px; }
+
+    @media (max-width: 680px) {
+      #stats { gap: 16px; }
+      .illus { display: none; }
+      #controls { right: 50%; transform: translateX(50%); }
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="fx"></canvas>
+    <div id="labels"></div>
+  </div>
+
+  <div class="brand">
+    <span class="nm">Apromore</span>
+    <span class="x">×</span>
+    <img src="assets/logos/Salesforce-Corporate-Logo-Cloud-RBG.svg" width="22" height="22" alt="Salesforce" onerror="this.style.display='none'"/>
+  </div>
+  <div class="illus">Illustrative, simplified</div>
+
+  <div id="caption">
+    <div id="cap-eyebrow"></div>
+    <h1 id="cap-title"></h1>
+    <p id="cap-sub"></p>
+  </div>
+
+  <div id="stats">
+    <div class="stat"><div class="v" id="s-cases">0</div><div class="k">Credit applications</div></div>
+    <div class="stat"><div class="v" id="s-variants">1</div><div class="k">Distinct variants</div></div>
+    <div class="stat"><div class="v" id="s-paths">7</div><div class="k">Connections</div></div>
+  </div>
+
+  <div id="punch">
+    <div class="big">Every line is a real path your cases took.<br/><em>Process intelligence makes the invisible process visible.</em></div>
+    <div class="small">This is why "the map" and "the territory" are never the same drawing.</div>
+  </div>
+
+  <div id="controls">
+    <div class="seg" id="seg">
+      <button data-act="1" class="on">Designed</button>
+      <button data-act="2">Believed</button>
+      <button data-act="3">Reality</button>
+    </div>
+    <button class="replay" id="replay">↻ Replay</button>
+  </div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── Canvas setup ───────────────────────────────────────────────
+  const cv = document.getElementById('fx');
+  const ctx = cv.getContext('2d');
+  const labelLayer = document.getElementById('labels');
+  let W = 0, H = 0, DPR = 1;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Normalised → pixel projection (with padding so nothing clips edges)
+  const PAD_X = 0.06, PAD_TOP = 0.20, PAD_BOT = 0.14;
+  const px = nx => (PAD_X + nx * (1 - 2 * PAD_X)) * W;
+  const py = ny => (PAD_TOP + ny * (1 - PAD_TOP - PAD_BOT)) * H;
+
+  // Seeded RNG so the "reality" layout is stable between runs
+  function mulberry32(a) {
+    return () => {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const rnd = mulberry32(20260606);
+
+  // ── Palette (canvas hex; mirrors tokens.css secondary palette) ──
+  const C = {
+    gray:'#9AA0AE', teal:'#06A59A', dgreen:'#0E7C5A', green:'#2FA45C',
+    lblue:'#00B3FF', blue:'#3B82F6', violetL:'#D17DFE', violet:'#A855F7',
+    yellow:'#E4A201', yellowL:'#FCC003', lgreen:'#7CB342'
+  };
+  const CLOUD_COLORS = [C.teal,C.green,C.lblue,C.blue,C.violetL,C.violet,C.yellow,C.yellowL,C.lgreen,C.dgreen,'#5AC8FA','#34C759'];
+
+  // ── Nodes ──────────────────────────────────────────────────────
+  // kind: 'main' (acts 1–3), 'branch' (acts 2–3), 'cloud' (act 3 only)
+  // Each node carries three normalised layouts: a1 (designed), a2 (believed), a3 (reality)
+  const MAIN = [
+    { label:'Process Start',            color:C.gray },
+    { label:'Create credit application',color:C.teal },
+    { label:'Verify Documents',         color:C.green },
+    { label:'Submit Credit for Decision',color:C.lblue },
+    { label:'Approve',                  color:C.blue },
+    { label:'Sign Contract',            color:C.violetL },
+    { label:'Release Funds',            color:C.violet },
+    { label:'Process End',              color:C.gray },
+  ];
+  const BRANCH = [
+    { label:'Customer Onboarding',      color:C.dgreen },   // 8
+    { label:'Request Additional Docs',  color:C.yellow },   // 9
+    { label:'Customer No-Go',           color:C.yellowL },  // 10
+    { label:'Justify & Close',          color:C.lgreen },   // 11
+  ];
+
+  const nodes = [];
+  // Designed/believed column geometry
+  const colY = i => 0.05 + i * (0.92 / 7);          // 8 main nodes, evenly spaced
+  const MAIN_X1 = 0.50, MAIN_X2 = 0.56;
+
+  MAIN.forEach((m, i) => nodes.push({
+    label:m.label, color:m.color, kind:'main', r:9,
+    a1:{x:MAIN_X1, y:colY(i)}, a2:{x:MAIN_X2, y:colY(i)}, a3:null,
+  }));
+  // Branch placements for act 2 (off to the side of their parent step)
+  const bPlace = [
+    { x:0.30, y:(colY(1)+colY(2))/2 - 0.02 },  // onboarding (between create & verify)
+    { x:0.82, y:(colY(2)+colY(3))/2 },         // request docs (right of verify)
+    { x:0.30, y:(colY(4)+colY(5))/2 },         // no-go (left of approve)
+    { x:0.30, y:colY(5)+0.04 },                // justify & close
+  ];
+  const bParent = [1,2,4,4]; // which main node they emerge from in act1
+  BRANCH.forEach((b, i) => nodes.push({
+    label:b.label, color:b.color, kind:'branch', r:8,
+    a1:{ x:nodes[bParent[i]].a1.x, y:nodes[bParent[i]].a1.y }, // hidden, sitting on parent
+    a2:bPlace[i], a3:null,
+  }));
+  // Reality-only cloud nodes
+  const CLOUD_N = 17;
+  for (let i = 0; i < CLOUD_N; i++) {
+    nodes.push({ label:'', color:CLOUD_COLORS[i % CLOUD_COLORS.length], kind:'cloud', r:6+rnd()*2,
+      a1:null, a2:null, a3:null });
+  }
+  // Reality layout (a3) for ALL nodes — scattered cloud
+  nodes.forEach(n => {
+    n.a3 = { x:0.14 + rnd()*0.72, y:0.04 + rnd()*0.92 };
+  });
+  // Give the cloud-only nodes a hidden start (collapsed toward centre) for acts 1–2
+  nodes.forEach(n => { if (n.kind === 'cloud') { n.a1 = {x:0.5,y:0.5}; n.a2 = {x:0.5,y:0.5}; } });
+
+  // Per-node animated state
+  nodes.forEach(n => {
+    const s = n.a1;
+    n.nx = s.x; n.ny = s.y;        // current normalised position
+    n.tx = s.x; n.ty = s.y;        // target normalised position
+    n.alpha = n.kind === 'main' ? 1 : 0;
+    n.talpha = n.alpha;
+    n.labA = 0;                    // label opacity (current)
+    n.labT = 0;
+    n.sx = 0; n.sy = 0;            // cached pixel position (updated each frame)
+    n.pulse = rnd() * Math.PI * 2;
+  });
+
+  // ── Edges ──────────────────────────────────────────────────────
+  // Each edge: {a,b,curv,cat,alpha,talpha,label,order}
+  function mkEdge(a, b, cat, curv, label) {
+    return { a, b, cat, curv: curv ?? 0, label: label || null,
+             alpha: 0, talpha: 0, order: 0 };
+  }
+  const edges = [];
+  // Backbone (present in every act)
+  for (let i = 0; i < 7; i++) edges.push(mkEdge(i, i+1, 'main', 0));
+  // Believed-process detours (act 2) with real volumes from the source chart
+  const e_create_onb = mkEdge(1, 8, 'think', -0.35, '156,786');
+  const e_onb_verify = mkEdge(8, 2, 'think', -0.35, '156,786');
+  const e_verify_req = mkEdge(2, 9, 'think',  0.40, '89,956');
+  const e_req_submit = mkEdge(9, 3, 'think',  0.40, '89,956');
+  const e_app_nogo   = mkEdge(4, 10,'think', -0.35, '43,728');
+  const e_nogo_just  = mkEdge(10,11,'think', -0.30, null);
+  const e_just_end   = mkEdge(11, 7,'think', -0.45, '43,728');
+  const thinkEdges = [e_create_onb,e_onb_verify,e_verify_req,e_req_submit,e_app_nogo,e_nogo_just,e_just_end];
+  thinkEdges.forEach(e => edges.push(e));
+
+  // Reality edges — a dense, tangled web across ALL nodes
+  const REALITY_START = edges.length;
+  const NN = nodes.length;
+  const realityEdges = [];
+  const seen = new Set();
+  function addReality(a, b) {
+    if (a === b) return;
+    const key = a < b ? a+'-'+b : b+'-'+a;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const e = mkEdge(a, b, 'real', (rnd()*2-1)*0.5);
+    edges.push(e); realityEdges.push(e);
+  }
+  // 1) keep the backbone alive in reality too (already added)
+  // 2) connect every node to a few neighbours, biased toward nearby nodes
+  for (let i = 0; i < NN; i++) {
+    const ni = nodes[i];
+    const links = 3 + Math.floor(rnd() * 4);
+    // candidate list sorted by reality-distance
+    const cand = [];
+    for (let j = 0; j < NN; j++) if (j !== i) {
+      const dx = ni.a3.x - nodes[j].a3.x, dy = ni.a3.y - nodes[j].a3.y;
+      cand.push([j, dx*dx + dy*dy]);
+    }
+    cand.sort((p,q) => p[1] - q[1]);
+    for (let k = 0; k < links; k++) {
+      // mostly near, occasionally a long-range "leap" (the surprising rework path)
+      const idx = rnd() < 0.78 ? Math.floor(rnd()*6) : Math.floor(rnd()*cand.length);
+      addReality(i, cand[Math.min(idx, cand.length-1)][0]);
+    }
+  }
+  // Stable reveal order for the "drawing-in" build
+  realityEdges.forEach((e, i) => e.order = i);
+  const REAL_TOTAL = realityEdges.length;
+
+  // Adjacency for the reality random-walk (token flow in act 3)
+  const incident = nodes.map(() => []);
+  realityEdges.forEach(e => { incident[e.a].push(e); incident[e.b].push(e); });
+  // also let backbone carry flow
+  for (let i = 0; i < 7; i++) { incident[i].push(edges[i]); incident[i+1].push(edges[i]); }
+
+  // ── Geometry helpers ───────────────────────────────────────────
+  function ctrlPoints(e) {
+    const A = nodes[e.a], B = nodes[e.b];
+    const ax = A.sx, ay = A.sy, bx = B.sx, by = B.sy;
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.hypot(dx, dy) || 1;
+    const nxp = -dy / len, nyp = dx / len;      // perpendicular
+    const off = e.curv * len;
+    return {
+      ax, ay, bx, by, len,
+      c1x: ax + dx*0.33 + nxp*off, c1y: ay + dy*0.33 + nyp*off,
+      c2x: ax + dx*0.66 + nxp*off, c2y: ay + dy*0.66 + nyp*off,
+    };
+  }
+  function cubic(p, t) {
+    const u = 1 - t, tt = t*t, uu = u*u;
+    const a = uu*u, b = 3*uu*t, c = 3*u*tt, d = tt*t;
+    return {
+      x: a*p.ax + b*p.c1x + c*p.c2x + d*p.bx,
+      y: a*p.ay + b*p.c1y + c*p.c2y + d*p.by,
+    };
+  }
+  // sample an edge oriented from a given node (for the random walk)
+  function pointFrom(e, fromNode, t) {
+    const p = ctrlPoints(e);
+    const tt = (fromNode === e.a) ? t : 1 - t;
+    return cubic(p, tt);
+  }
+
+  // ── Tokens (cases flowing through the model) ───────────────────
+  const tokens = [];
+  function spawnRouted(route, color, speed, r) {
+    tokens.push({ mode:'route', route, ri:0, t:0, color, speed, r, life:0 });
+  }
+  function spawnWalk() {
+    const startCandidates = [0,1,2,3,4]; // begin near the front of the process
+    const node = startCandidates[(rnd()*startCandidates.length)|0];
+    const list = incident[node];
+    if (!list.length) return;
+    const e = list[(rnd()*list.length)|0];
+    const from = node;
+    const col = nodes[node].color;
+    tokens.push({ mode:'walk', edge:e, from, t:0,
+      color: col, speed: 130 + rnd()*120, r: 1.6 + rnd()*1.4, life:0,
+      ttl: 4 + rnd()*6 });
+  }
+  // Believed-process routes (main + the three known detours)
+  const baseRoute = [edges[0],edges[1],edges[2],edges[3],edges[4],edges[5],edges[6]];
+  const routeOnb  = [edges[0],e_create_onb,e_onb_verify,edges[2],edges[3],edges[4],edges[5],edges[6]];
+  const routeReq  = [edges[0],edges[1],e_verify_req,e_req_submit,edges[3],edges[4],edges[5],edges[6]];
+  const routeNogo = [edges[0],edges[1],edges[2],edges[3],e_app_nogo,e_nogo_just,e_just_end];
+
+  // ── Act / phase state machine ──────────────────────────────────
+  const CAPTIONS = {
+    1: { eyebrow:'How the process was designed',
+         title:'One clean path. Eight steps. Start to finish.',
+         sub:'This is the model on the wall — the way the credit process is supposed to run, every single time.' },
+    2: { eyebrow:'…how we think it runs',
+         title:'A few detours we already know about.',
+         sub:'Onboarding loops back. Documents get requested again. Some customers walk. We account for the exceptions we can name.' },
+    3: { eyebrow:'…and how it really looks',
+         title:'695,032 cases never read the same map twice.',
+         sub:'Every line is a path real cases actually took. Thousands of variants, hidden rework, loops nobody designed. This is the process you have.' },
+  };
+
+  let act = 1;
+  let actStart = performance.now();
+  const REVEAL_MS = 5200;          // how long the reality web takes to fully draw in
+  let spawnAcc = 0;                // token spawn accumulator
+  let autoTimers = [];
+
+  function setCaption(n) {
+    const c = CAPTIONS[n];
+    const wrap = document.getElementById('caption');
+    document.getElementById('cap-eyebrow').textContent = c.eyebrow;
+    document.getElementById('cap-title').textContent = c.title;
+    document.getElementById('cap-sub').textContent = c.sub;
+    wrap.classList.remove('cap-fade'); void wrap.offsetWidth; wrap.classList.add('cap-fade');
+  }
+
+  function goToAct(n, fromAuto) {
+    act = n;
+    actStart = performance.now();
+    setCaption(n);
+    // segmented control highlight
+    document.querySelectorAll('#seg button').forEach(b =>
+      b.classList.toggle('on', +b.dataset.act === n));
+    // punchline only at the climax
+    document.getElementById('punch').style.opacity = '0';
+
+    // node targets + visibility per act
+    nodes.forEach(nd => {
+      const layout = n === 1 ? nd.a1 : n === 2 ? nd.a2 : nd.a3;
+      nd.tx = layout.x; nd.ty = layout.y;
+      if (nd.kind === 'main') nd.talpha = 1;
+      else if (nd.kind === 'branch') nd.talpha = (n >= 2) ? 1 : 0;
+      else nd.talpha = (n === 3) ? 0.95 : 0;
+      // labels: visible for named nodes in acts 1–2, drop away in reality
+      const named = nd.kind !== 'cloud';
+      nd.labT = (n < 3 && named && nd.talpha > 0.5) ? 1 : 0;
+    });
+
+    // edge target alphas
+    edges.forEach(e => {
+      if (e.cat === 'main')      e.talpha = n === 3 ? 0.5 : 1;
+      else if (e.cat === 'think')e.talpha = n === 2 ? 0.95 : (n === 3 ? 0.18 : 0);
+      else /* real */            e.talpha = 0; // revealed progressively in the loop
+    });
+
+    // tokens: reset population to suit the act
+    tokens.length = 0;
+    if (n === 1) {
+      // one perfect case, re-spawning slowly
+      spawnRouted(baseRoute, '#CFF6FF', 95, 4.2);
+    }
+    // act 2 + 3 spawn in the loop
+  }
+
+  // ── Stat counters (eased toward targets) ───────────────────────
+  const stat = {
+    cases:   { el:document.getElementById('s-cases'),    cur:0,   tgt:0 },
+    variants:{ el:document.getElementById('s-variants'), cur:1,   tgt:1 },
+    paths:   { el:document.getElementById('s-paths'),    cur:7,   tgt:7 },
+  };
+  function statTargets() {
+    if (act === 1)      { stat.cases.tgt=695032; stat.variants.tgt=1;    stat.paths.tgt=7; }
+    else if (act === 2) { stat.cases.tgt=695032; stat.variants.tgt=6;    stat.paths.tgt=14; }
+    else {
+      stat.cases.tgt=695032;
+      // variants race upward over the reveal
+      const p = Math.min(1, (performance.now()-actStart)/REVEAL_MS);
+      stat.variants.tgt = Math.round(6 + easeOut(p) * 3211);   // → 3,217
+      stat.paths.tgt = 7 + Math.round(REAL_TOTAL * easeOut(p));
+    }
+  }
+  function fmt(n){ return Math.round(n).toLocaleString(); }
+
+  // ── Easing ─────────────────────────────────────────────────────
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+  // ── Main loop ──────────────────────────────────────────────────
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    // 1) tween node positions / alphas, cache pixel coords
+    const k = 1 - Math.pow(0.001, dt);    // smoothing factor (~time-based)
+    nodes.forEach(n => {
+      n.nx += (n.tx - n.nx) * k;
+      n.ny += (n.ty - n.ny) * k;
+      n.alpha += (n.talpha - n.alpha) * k;
+      n.labA += (n.labT - n.labA) * (1 - Math.pow(0.001, dt));
+      n.sx = px(n.nx); n.sy = py(n.ny);
+      n.pulse += dt * 2;
+    });
+
+    // 2) reveal reality edges progressively in act 3
+    if (act === 3) {
+      const p = Math.min(1, (now - actStart) / REVEAL_MS);
+      const shown = Math.floor(REAL_TOTAL * easeOut(p));
+      for (let i = 0; i < realityEdges.length; i++) {
+        realityEdges[i].talpha = (realityEdges[i].order < shown) ? 0.16 : 0;
+      }
+      // punchline near the end of the build
+      if (p > 0.82) document.getElementById('punch').style.opacity = '1';
+    }
+    edges.forEach(e => { e.alpha += (e.talpha - e.alpha) * k; });
+
+    // 3) spawn tokens for acts 2 / 3
+    spawnAcc += dt;
+    if (act === 2) {
+      if (spawnAcc > 0.42) {
+        spawnAcc = 0;
+        const roll = rnd();
+        const route = roll < 0.55 ? baseRoute : roll < 0.72 ? routeOnb : roll < 0.88 ? routeReq : routeNogo;
+        spawnRouted(route, '#CFF6FF', 120 + rnd()*40, 2.6 + rnd()*1.2);
+      }
+    } else if (act === 3) {
+      const p = Math.min(1, (now - actStart) / REVEAL_MS);
+      const targetTokens = Math.floor(60 + easeOut(p) * 470);
+      // spawn several per frame until we reach the target swarm size
+      let budget = 8;
+      while (tokens.length < targetTokens && budget-- > 0) spawnWalk();
+    }
+
+    // 4) advance tokens
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      const tk = tokens[i];
+      tk.life += dt;
+      if (tk.mode === 'route') {
+        const e = tk.route[tk.ri];
+        const p = ctrlPoints(e);
+        tk.t += (tk.speed * dt) / p.len;
+        if (tk.t >= 1) {
+          tk.t -= 1; tk.ri++;
+          if (tk.ri >= tk.route.length) {
+            // finished the journey; in act1 respawn after a beat, else drop
+            tokens.splice(i, 1);
+            if (act === 1) setTimeout(() => { if (act===1) spawnRouted(baseRoute,'#CFF6FF',95,4.2); }, 700);
+            continue;
+          }
+        }
+      } else { // walk
+        const e = tk.edge;
+        const p = ctrlPoints(e);
+        tk.t += (tk.speed * dt) / p.len;
+        if (tk.t >= 1) {
+          tk.t -= 1;
+          const dest = (tk.from === e.a) ? e.b : e.a;
+          const list = incident[dest];
+          // bias slightly against immediately reversing
+          let ne = list[(rnd()*list.length)|0];
+          if (list.length > 1 && ne === e) ne = list[(rnd()*list.length)|0];
+          tk.edge = ne; tk.from = dest;
+        }
+        tk.ttl -= dt;
+        if (tk.ttl <= 0 && act === 3) { tokens.splice(i, 1); continue; }
+      }
+    }
+
+    // 5) RENDER ----------------------------------------------------
+    // trail fade (destination-out lets the CSS gradient show through)
+    const fade = act === 3 ? 0.10 : 0.34;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = `rgba(0,0,0,${fade})`;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'source-over';
+
+    // edges
+    for (const e of edges) {
+      if (e.alpha < 0.01) continue;
+      const p = ctrlPoints(e);
+      ctx.beginPath();
+      ctx.moveTo(p.ax, p.ay);
+      ctx.bezierCurveTo(p.c1x, p.c1y, p.c2x, p.c2y, p.bx, p.by);
+      if (e.cat === 'real') {
+        ctx.strokeStyle = `rgba(150,170,215,${e.alpha})`;
+        ctx.lineWidth = 1;
+      } else if (e.cat === 'think') {
+        ctx.strokeStyle = `rgba(252,192,3,${e.alpha * 0.7})`;
+        ctx.lineWidth = 2;
+      } else {
+        ctx.strokeStyle = `rgba(150,205,255,${e.alpha * 0.85})`;
+        ctx.lineWidth = 2.4;
+      }
+      ctx.stroke();
+    }
+
+    // nodes
+    for (const n of nodes) {
+      if (n.alpha < 0.02) continue;
+      const r = n.r + Math.sin(n.pulse) * 0.6;
+      // soft halo
+      ctx.beginPath();
+      ctx.fillStyle = hexA(n.color, 0.18 * n.alpha);
+      ctx.arc(n.sx, n.sy, r * 2.1, 0, Math.PI*2); ctx.fill();
+      // core
+      ctx.beginPath();
+      ctx.fillStyle = hexA(n.color, n.alpha);
+      ctx.arc(n.sx, n.sy, r, 0, Math.PI*2); ctx.fill();
+      // ring
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(255,255,255,${0.5 * n.alpha})`;
+      ctx.lineWidth = 1; ctx.arc(n.sx, n.sy, r, 0, Math.PI*2); ctx.stroke();
+    }
+
+    // tokens (additive glow)
+    ctx.globalCompositeOperation = 'lighter';
+    for (const tk of tokens) {
+      const pt = tk.mode === 'route'
+        ? cubic(ctrlPoints(tk.route[tk.ri]), tk.t)
+        : pointFrom(tk.edge, tk.from, tk.t);
+      // fade in/out at the ends of life for walk tokens
+      let a = 1;
+      if (tk.mode === 'walk') a = Math.min(1, tk.life*3) * Math.min(1, Math.max(0, tk.ttl));
+      ctx.beginPath();
+      ctx.fillStyle = hexA(tk.color, 0.30 * a);
+      ctx.arc(pt.x, pt.y, tk.r * 2.6, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = hexA('#ffffff', 0.85 * a);
+      ctx.arc(pt.x, pt.y, tk.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+
+    // 6) sync DOM labels + badges to node pixel positions
+    syncLabels();
+
+    // 7) stat counters
+    statTargets();
+    for (const key in stat) {
+      const s = stat[key];
+      s.cur += (s.tgt - s.cur) * (1 - Math.pow(0.004, dt));
+      s.el.textContent = fmt(s.cur);
+    }
+    stat.variants.el.classList.toggle('hot', act === 3);
+
+    requestAnimationFrame(frame);
+  }
+
+  // hex (#rgb / #rrggbb) → rgba string
+  function hexA(hex, a) {
+    let h = hex.replace('#','');
+    if (h.length === 3) h = h.split('').map(c=>c+c).join('');
+    const n = parseInt(h, 16);
+    return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+  }
+
+  // ── DOM labels / volume badges ─────────────────────────────────
+  const labelEls = [];
+  nodes.forEach((n, i) => {
+    if (n.kind === 'cloud') { labelEls.push(null); return; }
+    const el = document.createElement('div');
+    el.className = 'nlabel';
+    el.textContent = n.label;
+    // offset label to the side of the dot so it doesn't sit on top
+    el.dataset.idx = i;
+    labelLayer.appendChild(el);
+    labelEls.push(el);
+  });
+  // volume badges live at the midpoint of their think-edge
+  const badgeEls = thinkEdges.filter(e => e.label).map(e => {
+    const el = document.createElement('div');
+    el.className = 'vbadge';
+    el.textContent = e.label;
+    el.dataset.edge = '1';
+    labelLayer.appendChild(el);
+    return { el, e };
+  });
+
+  function syncLabels() {
+    for (let i = 0; i < nodes.length; i++) {
+      const el = labelEls[i]; if (!el) continue;
+      const n = nodes[i];
+      // place label to the right for left-column nodes, left for right-column
+      const right = n.nx <= 0.6;
+      const ox = right ? 16 : -16;
+      el.style.left = (n.sx + ox) + 'px';
+      el.style.top  = n.sy + 'px';
+      el.style.transform = `translate(${right ? '0' : '-100%'}, -50%)`;
+      el.style.opacity = n.labA.toFixed(3);
+    }
+    for (const { el, e } of badgeEls) {
+      const p = ctrlPoints(e);
+      const mid = cubic(p, 0.5);
+      el.style.left = mid.x + 'px';
+      el.style.top  = mid.y + 'px';
+      el.style.opacity = (act === 2 ? e.alpha : 0).toFixed(3);
+    }
+  }
+
+  // ── Autoplay + controls ────────────────────────────────────────
+  function clearAuto(){ autoTimers.forEach(clearTimeout); autoTimers = []; }
+  function autoplay() {
+    clearAuto();
+    goToAct(1, true);
+    autoTimers.push(setTimeout(() => goToAct(2, true), 5200));
+    autoTimers.push(setTimeout(() => goToAct(3, true), 11200));
+  }
+  document.querySelectorAll('#seg button').forEach(b => {
+    b.addEventListener('click', () => { clearAuto(); goToAct(+b.dataset.act); });
+  });
+  document.getElementById('replay').addEventListener('click', autoplay);
+
+  // kick off
+  goToAct(1);
+  requestAnimationFrame(frame);
+  autoplay();
+})();
+</script>
+</body>
+</html>
